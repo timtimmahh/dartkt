@@ -4,7 +4,7 @@ version: 1.0.5
 homepage: https://github.com/codemonarch/dartkt
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.13.0 <3.0.0'
 
 dependencies:
   convert: ^3.0.0

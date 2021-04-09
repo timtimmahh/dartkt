@@ -5,12 +5,12 @@ A dart library for lazier programmers.
 
 ## Getting Started
 
-Add dependence of ```dartkt``` to your project. The last version is ```1.0.2``` .
+Add dependence of ```dartkt``` to your project. The last version is ```1.0.5``` .
 
 ```
 dependencies:
     ... ...
-    dartkt: ^1.0.2
+    dartkt: ^1.0.5
 ```
 
 ## Functions

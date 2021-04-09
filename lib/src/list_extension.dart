@@ -1,4 +1,41 @@
-import 'package:dartkt/src/pair_extension.dart';
+import 'bool_extension.dart';
+import 'pair_extension.dart';
+
+extension KTIterableExtension<T> on Iterable<T> {
+  Iterable<T> filter(bool Function(T) predicate) => where(predicate);
+
+  Iterable<T> filterNot(bool Function(T) predicate) =>
+      where((e) => !predicate(e));
+
+  Iterable<T> filterNotNull() => whereType<T>();
+
+  Iterable<R> mapNotNull<R>(R? Function(T) block) => map(block).whereType<R>();
+
+  R fold<R>(R initialValue, R Function(R, T) combine) {
+    var finalValue = initialValue;
+    for (var item in this) {
+      finalValue = combine(finalValue, item);
+    }
+    return finalValue;
+  }
+
+  R reduce<R>(R Function(R?, T) combine) {
+    R? finalValue;
+    for (var item in this) {
+      finalValue = combine(finalValue, item);
+    }
+    return finalValue!;
+  }
+
+  Pair<Iterable<T>, Iterable<T>> partition(bool Function(T) predicate) {
+    final parts =
+        pair(List<T>.empty(growable: true), List<T>.empty(growable: true));
+    for (var item in this) {
+      predicate(item).chooseValue(parts.left, parts.right).add(item);
+    }
+    return parts;
+  }
+}
 
 extension KTListExtension<T> on List<T> {
   // kotlin
@@ -83,6 +120,7 @@ extension KTListExtension<T> on List<T> {
   }
 
   List<T> slice(int startIdx, int endIdx) => sublist(startIdx, endIdx);
+
   List<T> sortBy(int Function(T first, T second) block) {
     var tmp = this;
     tmp.sort(block);
