@@ -70,4 +70,6 @@ class RegexUtil {
       _regexMatch(str, '[1-9]\\d{5}(?!\\d)');
   static bool isValidIPAddress(String str) => _regexMatch(str,
       '((?:(?:25[0-5]|2[0-4]\\\\d|[01]?\\\\d?\\\\d)\\\\.){3}(?:25[0-5]|2[0-4]\\\\d|[01]?\\\\d?\\\\d))');
+
+
 }
