@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dartkt/src/string_extension.dart';
-import 'package:dartkt/src/map_extension.dart';
 import 'package:dartkt/src/list_extension.dart';
+import 'package:dartkt/src/map_extension.dart';
+import 'package:dartkt/src/string_extension.dart';
 
 enum HttpMethod { GET, HEAD, POST, PUT, DELETE }
 
@@ -23,8 +23,9 @@ class HttpResponse {
 
 // http error, etc. timeout, 503
 class HttpError extends Error {
-  int code;
-  String message;
+  int? code;
+  String? message;
+
   HttpError([this.code, this.message]);
 
   @override
@@ -35,12 +36,12 @@ class HttpError extends Error {
 
 // common http
 Future<T> http<T>(String url, HttpMethod method,
-    {Map<String, String> param,
+    {Map<String, String>? param,
     String mimeType = 'application/json',
-    String body,
-    Map<String, String> postParam,
-    Map<String, String> fileParam,
-    Map<String, String> headers,
+    String? body,
+    Map<String, String>? postParam,
+    Map<String, String>? fileParam,
+    Map<String, String>? headers,
     int timeout = 15}) async {
   assert(url.isNotEmpty);
   var uri = Uri.parse(_buildUrl(url, _buildQueryStr(param)));
@@ -68,14 +69,12 @@ Future<T> http<T>(String url, HttpMethod method,
 
 // GET
 Future<HttpResponse> httpGet(String url,
-        {Map<String, String> param, Map<String, String> headers}) async =>
+        {Map<String, String>? param, Map<String, String>? headers}) async =>
     http(url, HttpMethod.GET, param: param, headers: headers);
 
 // POST
 Future<HttpResponse> httpPost(String url,
-        {Map<String, String> param,
-        String body,
-        Map<String, String> headers}) async =>
+        {Map<String, String>? param, String? body, Map<String, String>? headers}) async =>
     http(url, HttpMethod.POST, param: param, body: body, headers: headers);
 
 // build HttpClientRequest
@@ -102,16 +101,11 @@ Future<HttpClientRequest> _buildRequest(
   return request;
 }
 
-void _assembleRequest(HttpClientRequest request,
-    [String mimeType,
-    Map<String, String> headers,
-    String body,
-    Map<String, String> param,
-    Map<String, String> file]) {
-  if (request == null) {
-    return;
-  }
-
+void _assembleRequest(HttpClientRequest request, String mimeType,
+    [Map<String, String>? headers,
+    String? body,
+    Map<String, String>? param,
+    Map<String, String>? file]) {
   // assemble headers
   if (headers != null) {
     headers.forEach((k, v) {
@@ -157,11 +151,9 @@ void _assembleRequest(HttpClientRequest request,
 }
 
 // concat url and query
-String _buildUrl(String url, String query) => (query == null || query.isEmpty)
-    ? url
-    : (url.contains('?') ? '$url&$query' : '$url?$query');
+String _buildUrl(String url, String? query) =>
+    (query == null || query.isEmpty) ? url : (url.contains('?') ? '$url&$query' : '$url?$query');
 
 // map to query string
-String _buildQueryStr(Map<String, String> params) => params == null
-    ? null
-    : params.mapToList((it) => '${it.key}=${it.value}').joinToString('&');
+String? _buildQueryStr(Map<String, String>? params) =>
+    params == null ? null : params.mapToList((it) => '${it.key}=${it.value}').joinToString('&');

@@ -2,7 +2,7 @@ import 'package:dartkt/src/object_extension.dart';
 import 'package:dartkt/src/pair_extension.dart';
 
 extension KTSetExtension<T> on Set<T> {
-  T find(bool Function(T) block) {
+  T? find(bool Function(T) block) {
     for (var element in this) {
       if (block(element)) {
         return element;
@@ -11,7 +11,7 @@ extension KTSetExtension<T> on Set<T> {
     return null;
   }
 
-  T findLast(bool Function(T) block) {
+  T? findLast(bool Function(T) block) {
     for (var i = length - 1; i >= 0; i--) {
       if (block(elementAt(i))) {
         return elementAt(i);
@@ -97,7 +97,7 @@ extension KTSetExtension<T> on Set<T> {
 
   Set<T> sortByDescending(int Function(T first, T second) block) => let((it) {
         it.toList().sort(block);
-        return it.toList().reversed;
+        return it.toList().reversed.toSet();
       });
 
   Set<R> map2<R>(R Function(T) block) {
@@ -194,7 +194,7 @@ extension KTSetExtension<T> on Set<T> {
 
   void minus(Set<T> s) => removeWhere((it) => s.contains(it));
 
-  String joinToString([String sep = ',', String Function(T) block]) {
+  String joinToString([String sep = ',', String Function(T)? block]) {
     var str = '';
     forEach((it) {
       if (block == null) {

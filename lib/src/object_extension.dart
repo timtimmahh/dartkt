@@ -1,8 +1,16 @@
 class ElseBlock<T> {
   bool condition;
   T obj;
+
   ElseBlock(this.condition, this.obj);
+
   T elseBlock(T Function(T) action) => condition ? action(obj) : obj;
+}
+
+extension KTNullableObjectExtension<T> on T? {
+  T? takeIf(bool Function(T) block) => this != null && block(this!) ? this : null;
+
+  T? takeUnless(bool Function(T) block) => this != null && !block(this!) ? this : null;
 }
 
 extension KTObjectExtension<T> on T {
@@ -12,8 +20,6 @@ extension KTObjectExtension<T> on T {
   }
 
   R let<R>(R Function(T obj) block) => block(this);
-  T takeIf(bool Function(T) block) => block(this) ? this : null;
-  T takeUnless(bool Function(T) block) => !block(this) ? this : null;
 
   ElseBlock<T> ifBlock(bool condition, T Function(T) block) =>
       ElseBlock(condition, condition ? block(this) : this);

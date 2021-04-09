@@ -2,7 +2,7 @@ import 'package:dartkt/src/pair_extension.dart';
 
 extension KTListExtension<T> on List<T> {
   // kotlin
-  T find(bool Function(T) block) {
+  T? find(bool Function(T) block) {
     for (var e in this) {
       if (block(e)) {
         return e;
@@ -11,7 +11,7 @@ extension KTListExtension<T> on List<T> {
     return null;
   }
 
-  T findLast(bool Function(T) block) {
+  T? findLast(bool Function(T) block) {
     for (var i = length - 1; i >= 0; i--) {
       if (block(this[i])) {
         return this[i];
@@ -92,7 +92,7 @@ extension KTListExtension<T> on List<T> {
   List<T> sortByDescending(int Function(T first, T second) block) {
     var tmp = this;
     tmp.sort(block);
-    return tmp.reversed;
+    return tmp.reversed.toList();
   }
 
   List<R> map2<R>(R Function(T) block) {
@@ -189,7 +189,7 @@ extension KTListExtension<T> on List<T> {
 
   void minus(List<T> list) => removeWhere((it) => list.contains(it));
 
-  String joinToString([String sep = ',', String Function(T) block]) {
+  String joinToString([String sep = ',', String Function(T)? block]) {
     var str = '';
     forEach((it) {
       if (block == null) {
@@ -204,7 +204,7 @@ extension KTListExtension<T> on List<T> {
     return str;
   }
 
-  List<String> toStringList() => map((it) => '$it');
+  List<String> toStringList() => map((it) => '$it').toList();
 
   Map<K, V> toMap<K, V>() {
     var ret = <K, V>{};

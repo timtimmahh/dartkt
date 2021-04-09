@@ -1,21 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:dartkt/src/pair_extension.dart';
-import 'package:dartkt/src/object_extension.dart';
-import 'package:dartkt/src/list_extension.dart';
+
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dartkt/src/list_extension.dart';
+import 'package:dartkt/src/object_extension.dart';
+import 'package:dartkt/src/pair_extension.dart';
 
 extension KTStringExtension on String {
   // kotlin
   String substringBefore(Pattern pattern) =>
       indexOf(pattern).let((idx) => idx == -1 ? this : substring(0, idx));
-  String substringAfter(Pattern pattern) => indexOf(pattern).let((idx) =>
-      idx == -1 ? this : substring(idx + pattern.toString().length, length));
+
+  String substringAfter(Pattern pattern) => indexOf(pattern)
+      .let((idx) => idx == -1 ? this : substring(idx + pattern.toString().length, length));
+
   String substringBeforeLast(Pattern pattern) =>
       lastIndexOf(pattern).let((idx) => idx == -1 ? this : substring(0, idx));
-  String substringAfterLast(Pattern pattern) =>
-      lastIndexOf(pattern).let((idx) => idx == -1
+
+  String substringAfterLast(Pattern pattern) => lastIndexOf(pattern).let((idx) => idx == -1
           ? this
           : substring(idx + pattern.toString().length, length));
   String removeRange(int startIdx, int endIdx) {
@@ -196,9 +199,6 @@ extension KTStringExtension on String {
     var content = Utf8Encoder().convert(this);
     Digest digest;
     switch (alg.toLowerCase()) {
-      case 'md5':
-        digest = md5.convert(content);
-        break;
       case 'sha1':
         digest = sha1.convert(content);
         break;
@@ -208,8 +208,11 @@ extension KTStringExtension on String {
       case 'sha512':
         digest = sha512.convert(content);
         break;
+      default:
+        digest = md5.convert(content);
+        break;
     }
-    return digest != null ? hex.encode(digest.bytes) : null;
+    return hex.encode(digest.bytes);
   }
 
   String get md5sha1 => hash('MD5') + hash('SHA1');

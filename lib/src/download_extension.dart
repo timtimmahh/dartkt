@@ -4,11 +4,19 @@ import 'package:dartkt/src/string_extension.dart';
 
 enum DownloadState { Start, Progress, Complete, Error }
 
-typedef DownloadCallback = void Function(
-    DownloadState state, int position, int filesize, String error);
+class DownloadInfo {
+  DownloadState state;
+  int position = 0;
+  int filesize = 0;
+  String? error;
 
-Future<bool> download(
-    String url, String localFile, DownloadCallback callback) async {
+  DownloadInfo.error(this.state, this.error);
+
+  DownloadInfo(this.state, this.position, this.filesize);
+}
+
+Future<bool> download(String url, String localFile,
+    [void Function(DownloadInfo info)? callback]) async {
   var fTmp = File(localFile);
   if (fTmp.existsSync()) {
     fTmp.deleteSync();
@@ -27,7 +35,7 @@ Future<bool> download(
     var request = await client.getUrl(Uri.parse(url));
     var response = await request.close();
     var filesize = response.contentLength;
-    if (callback != null) callback(DownloadState.Start, 0, filesize, null);
+    if (callback != null) callback(DownloadInfo(DownloadState.Start, 0, filesize));
     var fileOut = File('$localFile.tmp');
     if (fileOut.existsSync()) {
       fileOut.deleteSync();
@@ -41,33 +49,35 @@ Future<bool> download(
         fileOut.writeAsBytesSync(data, mode: FileMode.append);
         position += count;
         if (callback != null) {
-          callback(DownloadState.Progress, position, filesize, null);
+          callback(DownloadInfo(DownloadState.Progress, position, filesize));
         }
-      } on Exception catch (exeption) {
+      } on Exception catch (exception) {
         if (callback != null) {
-          callback(DownloadState.Error, 0, 0, exeption.toString());
+          callback(DownloadInfo.error(DownloadState.Error, exception.toString()));
         }
       }
     }, onDone: () {
       fileOut.renameSync(localFile);
-      callback(DownloadState.Complete, 0, filesize, null);
+      if (callback != null) {
+        callback(DownloadInfo(DownloadState.Complete, 0, filesize));
+      }
     }, onError: (error) {
       isDownloadSuccess = false;
       if (callback != null) {
-        callback(DownloadState.Error, 0, 0, error.toString());
+        callback(DownloadInfo.error(DownloadState.Error, error.toString()));
       }
     }, cancelOnError: true);
   } on Error catch (error) {
     print(error);
     isDownloadSuccess = false;
     if (callback != null) {
-      callback(DownloadState.Error, 0, 0, error.toString());
+      callback(DownloadInfo.error(DownloadState.Error, error.toString()));
     }
   } on Exception catch (exception) {
     print(exception);
     isDownloadSuccess = false;
     if (callback != null) {
-      callback(DownloadState.Error, 0, 0, exception.toString());
+      callback(DownloadInfo.error(DownloadState.Error, exception.toString()));
     }
   }
   return isDownloadSuccess;
