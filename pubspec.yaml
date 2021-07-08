@@ -1,6 +1,6 @@
 name: dartkt
 description: A dart library for lazier programmers. Functions are ported from kotlin.
-version: 1.0.5
+version: 1.0.6
 homepage: https://github.com/codemonarch/dartkt
 
 environment:
