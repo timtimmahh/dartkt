@@ -37,6 +37,16 @@ extension KTIterableExtension<T> on Iterable<T> {
   }
 }
 
+extension KTIterableExtension<T> on Iterable<T> {
+  Iterable<T> filter(bool Function(T) predicate) => where(predicate);
+
+  Iterable<T> filterNot(bool Function(T) predicate) => where((e) => !predicate(e));
+
+  Iterable<T> filterNotNull() => whereType<T>();
+  
+  Iterable<R> mapNotNull<R>(R? Function(T) block) => map(block).whereType<R>();
+}
+
 extension KTListExtension<T> on List<T> {
   // kotlin
   T? find(bool Function(T) block) {
