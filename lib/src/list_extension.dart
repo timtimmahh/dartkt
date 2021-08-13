@@ -1,13 +1,15 @@
 import 'bool_extension.dart';
 import 'pair_extension.dart';
 
+extension KTIterableNullExtension<T> on Iterable<T?> {
+  Iterable<T> filterNotNull() => whereType<T>();
+}
+
 extension KTIterableExtension<T> on Iterable<T> {
   Iterable<T> filter(bool Function(T) predicate) => where(predicate);
 
   Iterable<T> filterNot(bool Function(T) predicate) =>
       where((e) => !predicate(e));
-
-  Iterable<T> filterNotNull() => whereType<T>();
 
   Iterable<R> mapNotNull<R>(R? Function(T) block) => map(block).whereType<R>();
 
