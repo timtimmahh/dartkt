@@ -1,6 +1,8 @@
 import 'package:dartkt/src/object_extension.dart';
 import 'package:dartkt/src/pair_extension.dart';
 
+Set<T> emptySet<T>() => <T>{};
+
 extension KTSetExtension<T> on Set<T> {
   T? find(bool Function(T) block) {
     for (var element in this) {

@@ -1,6 +1,12 @@
 import 'package:dartkt/src/pair_extension.dart';
 
+Map<K, V> emptyMap<K, V>() => <K, V>{};
+
 extension KTMapExtension<K, V> on Map<K, V> {
+  bool isKeyType<T>() => K == T;
+
+  bool isValueType<T>() => V == T;
+
   // kotlin
   List<KTPair<K, V>> toList() {
     var ret = <KTPair<K, V>>[];
@@ -85,10 +91,10 @@ extension KTMapExtension<K, V> on Map<K, V> {
   }
 
   void add(Map<K, V> map) => map.forEach((k, v) => this[k] = v);
+
   void minus(Map<K, V> map) => removeWhere((k, v) => map[k] == v);
 
-  Map<K, V> filterTo<M extends Map<K, V>>(
-      M dest, bool Function(MapEntry<K, V> e) block) {
+  Map<K, V> filterTo<M extends Map<K, V>>(M dest, bool Function(MapEntry<K, V> e) block) {
     forEachEntry((it) {
       if (block(it)) {
         dest[it.key] = it.value;
@@ -97,8 +103,7 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return dest;
   }
 
-  Map<K, V> filterNotTo<M extends Map<K, V>>(
-      M dest, bool Function(MapEntry<K, V> e) block) {
+  Map<K, V> filterNotTo<M extends Map<K, V>>(M dest, bool Function(MapEntry<K, V> e) block) {
     forEachEntry((it) {
       if (!block(it)) {
         dest[it.key] = it.value;
@@ -107,8 +112,7 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return dest;
   }
 
-  Map<K, V> filterValuesTo<M extends Map<K, V>>(
-      M dest, bool Function(V) block) {
+  Map<K, V> filterValuesTo<M extends Map<K, V>>(M dest, bool Function(V) block) {
     forEachEntry((it) {
       if (block(it.value)) {
         dest[it.key] = it.value;
@@ -117,8 +121,7 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return dest;
   }
 
-  Map<K2, V2> mapTo<K2, V2, C extends Map<K2, V2>>(
-      C dest, MapEntry<K2, V2> Function(MapEntry<K, V> e) block) {
+  Map<K2, V2> mapTo<K2, V2, C extends Map<K2, V2>>(C dest, MapEntry<K2, V2> Function(MapEntry<K, V> e) block) {
     forEachEntry((it) {
       var item = block(it);
       dest[item.key] = item.value;
@@ -126,16 +129,14 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return dest;
   }
 
-  List<R> mapToListTo<R, C extends List<R>>(
-      C dest, R Function(MapEntry<K, V> e) block) {
+  List<R> mapToListTo<R, C extends List<R>>(C dest, R Function(MapEntry<K, V> e) block) {
     forEachEntry((it) {
       dest.add(block(it));
     });
     return dest;
   }
 
-  Map<K2, V2> mapKeysTo<K2, V2, C extends Map<K2, V2>>(
-      C dest, MapEntry<K2, V2> Function(K) block) {
+  Map<K2, V2> mapKeysTo<K2, V2, C extends Map<K2, V2>>(C dest, MapEntry<K2, V2> Function(K) block) {
     forEachEntry((it) {
       var item = block(it.key);
       dest[item.key] = item.value;
@@ -150,8 +151,7 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return dest;
   }
 
-  Map<K2, V2> mapValuesTo<K2, V2, C extends Map<K2, V2>>(
-      C dest, MapEntry<K2, V2> Function(V) block) {
+  Map<K2, V2> mapValuesTo<K2, V2, C extends Map<K2, V2>>(C dest, MapEntry<K2, V2> Function(V) block) {
     forEachEntry((it) {
       var item = block(it.value);
       dest[item.key] = item.value;

@@ -1,11 +1,15 @@
 import 'bool_extension.dart';
 import 'pair_extension.dart';
 
+Iterable<T> emptyIterable<T>() => Iterable.empty();
+
 extension KTIterableNullExtension<T> on Iterable<T?> {
   Iterable<T> filterNotNull() => whereType<T>();
 }
 
 extension KTIterableExtension<T> on Iterable<T> {
+  bool isType<E>() => T == E;
+
   Iterable<T> filter(bool Function(T) predicate) => where(predicate);
 
   Iterable<T> filterNot(bool Function(T) predicate) =>
@@ -38,6 +42,8 @@ extension KTIterableExtension<T> on Iterable<T> {
     return parts;
   }
 }
+
+List<T> emptyList<T>() => List<T>.empty();
 
 extension KTListExtension<T> on List<T> {
   // kotlin

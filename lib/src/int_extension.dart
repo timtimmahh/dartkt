@@ -1,4 +1,7 @@
 extension KTIntExtension on int {
+  List<int> to(int maxInclusive, {int step = 1}) =>
+      [for (int i = this; i <= maxInclusive; i += step) i];
+
   List<List<int>> toGridData([int column = 1]) {
     var ret = <List<int>>[];
     var count = 0;
