@@ -3,21 +3,104 @@ import 'pair_extension.dart';
 
 Iterable<T> emptyIterable<T>() => Iterable.empty();
 
-extension KTIterableNullExtension<T> on Iterable<T?> {
-  Iterable<T> filterNotNull() => whereType<T>();
+List<T> emptyList<T>() => List<T>.empty();
+
+extension KTNumIterableExtension on Iterable<num> {
+  double average() {
+    var sum = 0.0;
+    var count = 0;
+    for (var e in this) {
+      sum += e;
+      ++count;
+    }
+    return count == 0 ? double.nan : sum / count;
+  }
+}
+
+extension KTDynamicIterableExtension on Iterable<dynamic> {
+  Iterable<R> filterIsInstance<R>() => whereType<R>();
 }
 
 extension KTIterableExtension<T> on Iterable<T> {
-  bool isType<E>() => T == E;
+  bool all(bool Function(T it) predicate) {
+    if (isEmpty) return false;
+    for (var item in this) {
+      if (!predicate(item)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-  Iterable<T> filter(bool Function(T) predicate) => where(predicate);
+  bool any(bool Function(T it) predicate) {
+    if (isEmpty) return false;
+    for (var item in this) {
+      if (predicate(item)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-  Iterable<T> filterNot(bool Function(T) predicate) =>
+  Map<K, V> associate<K, V>(Pair<K, V> Function(T it) transform) =>
+      map(transform).toMap();
+
+  Map<K, V> associateBy<K, V>(K Function(T it) keySelector,
+          [V Function(T it)? valueTransform]) =>
+      associate((it) =>
+          Pair.of(keySelector(it), valueTransform?.call(it) ?? it as V));
+
+  Map<T, V> associateWith<V>(V Function(T it) valueSelector) =>
+      map((e) => Pair.of(e, valueSelector(e))).toMap();
+
+  List<List<T>> chunked(int size) {
+    var result = <List<T>>[];
+    var it = iterator;
+    while (it.moveNext()) {
+      var chunk = <T>[it.current];
+      for (var i = 1; i < size && it.moveNext(); i++) {
+        chunk.add(it.current);
+      }
+      result.add(chunk);
+    }
+    return result;
+  }
+
+  List<R> chunkedBy<R>(int size, R Function(List<T> it) transform) {
+    var result = <R>[];
+    var it = iterator;
+    while (it.moveNext()) {
+      var chunk = <T>[it.current];
+      for (var i = 1; i < size && it.moveNext(); i++) {
+        chunk.add(it.current);
+      }
+      result.add(transform(chunk));
+    }
+    return result;
+  }
+
+  Iterable<T> distinct() => Set.of(this);
+
+  Iterable<T> distinctBy<K>(K Function(T it) selector) =>
+      Map<K, T>.fromIterable(this, key: (it) => selector(it)).values;
+
+  Iterable<T> drop(int n) => skip(n);
+
+  Iterable<T> dropWhile(bool Function(T it) predicate) => skipWhile(predicate);
+
+  Iterable<T> filter(bool Function(T it) predicate) => where(predicate);
+
+  Iterable<T> filterNot(bool Function(T it) predicate) =>
       where((e) => !predicate(e));
 
-  Iterable<R> mapNotNull<R>(R? Function(T) block) => map(block).whereType<R>();
+  T? find(bool Function(T it) predicate) => firstWhere(predicate);
 
-  R fold<R>(R initialValue, R Function(R, T) combine) {
+  T? findLast(bool Function(T it) predicate) => lastWhere(predicate);
+
+  Iterable<R> flatMap<R>(Iterable<R> Function(T it) transform) =>
+      expand(transform);
+
+  R fold<R>(R initialValue, R Function(R acc, T it) combine) {
     var finalValue = initialValue;
     for (var item in this) {
       finalValue = combine(finalValue, item);
@@ -25,15 +108,23 @@ extension KTIterableExtension<T> on Iterable<T> {
     return finalValue;
   }
 
-  R reduce<R>(R Function(R?, T) combine) {
-    R? finalValue;
-    for (var item in this) {
-      finalValue = combine(finalValue, item);
+  Map<K, Iterable<V>> groupBy<K, V>(K Function(T it) keySelector,
+      [V Function(T it)? valueTransform]) {
+    var result = <K, List<V>>{};
+    for (var e in this) {
+      result
+          .putIfAbsent(keySelector(e), () => <V>[])
+          .add((valueTransform ?? (it) => it as V)(e));
     }
-    return finalValue!;
+    return result;
   }
 
-  Pair<Iterable<T>, Iterable<T>> partition(bool Function(T) predicate) {
+  bool isType<E>() => T == E;
+
+  Iterable<R> mapNotNull<R>(R? Function(T it) transform) =>
+      map(transform).whereType<R>();
+
+  Pair<Iterable<T>, Iterable<T>> partition(bool Function(T it) predicate) {
     final parts =
         pair(List<T>.empty(growable: true), List<T>.empty(growable: true));
     for (var item in this) {
@@ -41,58 +132,63 @@ extension KTIterableExtension<T> on Iterable<T> {
     }
     return parts;
   }
+
+  R reduce<R>(R Function(R? acc, T it) operation) {
+    R? finalValue;
+    for (var item in this) {
+      finalValue = operation(finalValue, item);
+    }
+    return finalValue!;
+  }
 }
 
-List<T> emptyList<T>() => List<T>.empty();
+extension KTIterableIterableExtension<T> on Iterable<Iterable<T>> {
+  Iterable<T> flatten() => expand((element) => element);
+}
+
+extension KTIterablePairExtension<K, V> on Iterable<Pair<K, V>> {
+  Map<K, V> toMap() => Map.fromEntries(this);
+}
+
+extension KTIterableNullExtension<T> on Iterable<T?> {
+  Iterable<T> filterNotNull() => whereType<T>();
+}
 
 extension KTListExtension<T> on List<T> {
   List<T> append(T value) => this..add(value);
 
   List<T> appendAll(Iterable<T> iterable) => this..addAll(iterable);
 
-  List<T> prepend(T value) => this..insert(0, value);
+  int count([bool Function(T it)? predicate]) {
+    var ret = 0;
+    for (var item in this) {
+      if (predicate == null || predicate(item)) {
+        ret++;
+      }
+    }
+    return ret;
+  }
 
-  List<T> prependAll(Iterable<T> iterable) => this..insertAll(0, iterable);
+  List<T> distinct() {
+    var ret = <T>[];
+    for (var item in this) {
+      if (!ret.contains(item)) {
+        ret.add(item);
+      }
+    }
+    return ret;
+  }
 
-  // kotlin
-  T? find(bool Function(T) block) {
+  List<T> distinctBy<R>(R Function(T it) selector) {
+    var set = <R>{};
+    var list = <T>[];
     for (var e in this) {
-      if (block(e)) {
-        return e;
+      var key = selector(e);
+      if (set.add(key)) {
+        list.add(e);
       }
     }
-    return null;
-  }
-
-  T? findLast(bool Function(T) block) {
-    for (var i = length - 1; i >= 0; i--) {
-      if (block(this[i])) {
-        return this[i];
-      }
-    }
-    return null;
-  }
-
-  int indexOfFirst(bool Function(T) block) {
-    var idx = -1;
-    for (var i = 0; i < length; i++) {
-      if (block(this[i])) {
-        idx = i;
-        break;
-      }
-    }
-    return idx;
-  }
-
-  int indexOfLast(bool Function(T) block) {
-    var idx = -1;
-    for (var i = length - 1; i >= 0; i--) {
-      if (block(this[i])) {
-        idx = i;
-        break;
-      }
-    }
-    return idx;
+    return list;
   }
 
   List<T> drop(int n) {
@@ -111,137 +207,104 @@ extension KTListExtension<T> on List<T> {
     return ret;
   }
 
-  List<T> filter(bool Function(T) block) {
+  List<T> filter(bool Function(T it) predicate) {
     var ret = <T>[];
     for (var i = 0; i < length; i++) {
-      if (block(this[i])) ret.add(this[i]);
+      if (predicate(this[i])) ret.add(this[i]);
     }
     return ret;
   }
 
-  List<T> filterIndexed(bool Function(int idx, T item) block) {
+  List<T> filterIndexed(bool Function(int index, T it) predicate) {
     var ret = <T>[];
     for (var i = 0; i < length; i++) {
-      if (block(i, this[i])) ret.add(this[i]);
+      if (predicate(i, this[i])) ret.add(this[i]);
     }
     return ret;
   }
 
-  List<T> filterNot(bool Function(T) block) {
+  List<T> filterNot(bool Function(T it) predicate) {
     var ret = <T>[];
     for (var i = 0; i < length; i++) {
-      if (!block(this[i])) ret.add(this[i]);
+      if (!predicate(this[i])) ret.add(this[i]);
     }
     return ret;
   }
 
-  List<T> slice(int startIdx, int endIdx) => sublist(startIdx, endIdx);
-
-  List<T> sortBy(int Function(T first, T second) block) {
-    var tmp = this;
-    tmp.sort(block);
-    return tmp;
-  }
-
-  List<T> sortByDescending(int Function(T first, T second) block) {
-    var tmp = this;
-    tmp.sort(block);
-    return tmp.reversed.toList();
-  }
-
-  List<R> map2<R>(R Function(T) block) {
-    var ret = <R>[];
-    for (var i = 0; i < length; i++) {
-      ret.add(block(this[i]));
-    }
-    return ret;
-  }
-
-  List<R> map2Indexed<R>(R Function(int idx, T item) block) {
-    var ret = <R>[];
-    for (var i = 0; i < length; i++) {
-      ret.add(block(i, this[i]));
-    }
-    return ret;
-  }
-
-  List<T> distinct() {
-    var ret = <T>[];
+  C filterTo<C extends List<T>>(C dest, bool Function(T) block) {
     for (var item in this) {
-      if (!ret.contains(item)) {
-        ret.add(item);
+      if (block(item)) {
+        dest.add(item);
       }
     }
-    return ret;
+    return dest;
   }
 
-  List<T> distinctBy<R>(R Function(T) block) {
-    var set = <R>{};
-    var list = <T>[];
-    for (var e in this) {
-      var key = block(e);
-      if (set.add(key)) {
-        list.add(e);
+  C filterIndexedTo<C extends List<T>>(
+      C dest, bool Function(int idx, T item) block) {
+    for (var i = 0; i < length; i++) {
+      if (block(i, this[i])) {
+        dest.add(this[i]);
       }
     }
-    return list;
+    return dest;
   }
 
-  bool all(bool Function(T) block) {
-    if (isEmpty) return false;
+  C filterNotTo<C extends List<T>>(C dest, bool Function(T) block) {
     for (var item in this) {
       if (!block(item)) {
-        return false;
+        dest.add(item);
       }
     }
-    return true;
+    return dest;
   }
 
-  bool any(bool Function(T) block) {
-    if (isEmpty) return false;
-    for (var item in this) {
-      if (block(item)) {
-        return true;
+  // kotlin
+  T? find(bool Function(T it) predicate) {
+    for (var e in this) {
+      if (predicate(e)) {
+        return e;
       }
     }
-    return false;
+    return null;
   }
 
-  int count(bool Function(T) block) {
-    var ret = 0;
-    for (var item in this) {
-      if (block(item)) {
-        ret++;
+  T? findLast(bool Function(T it) predicate) {
+    for (var i = length - 1; i >= 0; i--) {
+      if (predicate(this[i])) {
+        return this[i];
       }
     }
-    return ret;
+    return null;
   }
 
-  void forEachIndexed(void Function(int idx, T item) block) {
+  void forEachIndexed(void Function(int index, T it) action) {
     for (var i = 0; i < length; i++) {
-      block(i, this[i]);
+      action(i, this[i]);
     }
   }
 
-  bool none(bool Function(T) block) {
-    if (isEmpty) return true;
-    for (var item in this) {
-      if (block(item)) {
-        return false;
+  int indexOfFirst(bool Function(T it) predicate) {
+    var idx = -1;
+    for (var i = 0; i < length; i++) {
+      if (predicate(this[i])) {
+        idx = i;
+        break;
       }
     }
-    return true;
+    return idx;
   }
 
-  T reduceIndexed(T Function(int idx, T acc, T item) block) {
-    var accumulator = this[0];
-    for (var i = 1; i < length; i++) {
-      accumulator = block(i, accumulator, this[i]);
+  int indexOfLast(bool Function(T it) predicate) {
+    var idx = -1;
+    for (var i = length - 1; i >= 0; i--) {
+      if (predicate(this[i])) {
+        idx = i;
+        break;
+      }
     }
-    return accumulator;
+    return idx;
   }
-
-  void minus(List<T> list) => removeWhere((it) => list.contains(it));
 
   String joinToString([String sep = ',', String Function(T)? block]) {
     var str = '';
@@ -258,19 +321,6 @@ extension KTListExtension<T> on List<T> {
     return str;
   }
 
-  List<String> toStringList() => map((it) => '$it').toList();
-
-  Map<K, V> toMap<K, V>() {
-    var ret = <K, V>{};
-    if (this is List<KTPair<K, V>>) {
-      for (var item in this) {
-        var m = item as KTPair<K, V>;
-        ret[m.left] = m.right;
-      }
-    }
-    return ret;
-  }
-
   C mapTo<R, C extends List<R>>(C dest, R Function(T) block) {
     for (var item in this) {
       dest.add(block(item));
@@ -278,38 +328,66 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  C mapIndexedTo<R, C extends List<R>>(C dest, R Function(int idx, T item) block) {
+  C mapIndexedTo<R, C extends List<R>>(
+      C dest, R Function(int idx, T item) block) {
     for (var i = 0; i < length; i++) {
       dest.add(block(i, this[i]));
     }
     return dest;
   }
 
-  C filterTo<C extends List<T>>(C dest, bool Function(T) block) {
-    for (var item in this) {
-      if (block(item)) {
-        dest.add(item);
-      }
-    }
-    return dest;
-  }
-
-  C filterIndexedTo<C extends List<T>>(C dest, bool Function(int idx, T item) block) {
+  List<R> map2<R>(R Function(T it) transform) {
+    var ret = <R>[];
     for (var i = 0; i < length; i++) {
-      if (block(i, this[i])) {
-        dest.add(this[i]);
-      }
+      ret.add(transform(this[i]));
     }
-    return dest;
+    return ret;
   }
 
-  C filterNotTo<C extends List<T>>(C dest, bool Function(T) block) {
+  List<R> map2Indexed<R>(R Function(int index, T it) transform) {
+    var ret = <R>[];
+    for (var i = 0; i < length; i++) {
+      ret.add(transform(i, this[i]));
+    }
+    return ret;
+  }
+
+  void minus(List<T> list) => removeWhere((it) => list.contains(it));
+
+  bool none(bool Function(T it) predicate) {
+    if (isEmpty) return true;
     for (var item in this) {
-      if (!block(item)) {
-        dest.add(item);
+      if (predicate(item)) {
+        return false;
       }
     }
-    return dest;
+    return true;
+  }
+
+  List<T> prepend(T value) => this..insert(0, value);
+
+  List<T> prependAll(Iterable<T> iterable) => this..insertAll(0, iterable);
+
+  T reduceIndexed(T Function(int index, T acc, T it) operation) {
+    var accumulator = this[0];
+    for (var i = 1; i < length; i++) {
+      accumulator = operation(i, accumulator, this[i]);
+    }
+    return accumulator;
+  }
+
+  List<T> slice(int startIdx, int endIdx) => sublist(startIdx, endIdx);
+
+  List<T> sortBy(int Function(T first, T second) selector) {
+    var tmp = this;
+    tmp.sort(selector);
+    return tmp;
+  }
+
+  List<T> sortByDescending(int Function(T first, T second) selector) {
+    var tmp = this;
+    tmp.sort(selector);
+    return tmp.reversed.toList();
   }
 
   // rarnu
@@ -333,6 +411,8 @@ extension KTListExtension<T> on List<T> {
     }
     return ret;
   }
+
+  List<String> toStringList() => map((it) => '$it').toList();
 }
 
 extension KTListListExtension<T> on List<List<T>> {

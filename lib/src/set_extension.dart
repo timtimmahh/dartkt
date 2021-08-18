@@ -221,9 +221,9 @@ extension KTSetExtension<T> on Set<T> {
 
   Map<K, V> toMap<K, V>() {
     var ret = <K, V>{};
-    if (this is Set<KTPair<K, V>>) {
+    if (this is Set<Pair<K, V>>) {
       for (var item in this) {
-        var m = item as KTPair<K, V>;
+        var m = item as Pair<K, V>;
         ret[m.left] = m.right;
       }
     }

@@ -63,4 +63,13 @@ extension Date on DateTime {
 
   String format([String? newPattern, String? locale]) =>
       DateFormat(newPattern, locale).format(this);
+
+  bool operator <(DateTime other) => isBefore(other);
+
+  bool operator >(DateTime other) => isAfter(other);
+
+  bool operator <=(DateTime other) =>
+      isBefore(other) || isAtSameMomentAs(other);
+
+  bool operator >=(DateTime other) => isAfter(other) || isAtSameMomentAs(other);
 }

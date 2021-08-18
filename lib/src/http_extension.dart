@@ -155,5 +155,6 @@ String _buildUrl(String url, String? query) =>
     (query == null || query.isEmpty) ? url : (url.contains('?') ? '$url&$query' : '$url?$query');
 
 // map to query string
-String? _buildQueryStr(Map<String, String>? params) =>
-    params == null ? null : params.mapToList((it) => '${it.key}=${it.value}').joinToString('&');
+String? _buildQueryStr(Map<String, String>? params) => params == null
+    ? null
+    : params.mapToList((key, value) => '${key}=${value}').joinToString('&');

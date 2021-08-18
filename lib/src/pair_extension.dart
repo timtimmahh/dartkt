@@ -1,14 +1,12 @@
-typedef Pair<F, S> = KTPair<F, S>;
+Pair<F, S> pair<F, S>(F first, S second) => Pair<F, S>.of(first, second);
 
-KTPair<F, S> pair<F, S>(F first, S second) => KTPair<F, S>.of(first, second);
-
-class KTPair<T, U> {
-  KTPair(this.left, this.right);
+class Pair<T, U> implements MapEntry<T, U> {
+  Pair(this.left, this.right);
 
   final T left;
   final U right;
 
-  factory KTPair.of(T first, U second) => KTPair(first, second);
+  factory Pair.of(T first, U second) => Pair(first, second);
 
   @override
   String toString() => 'Pair[$left, $right]';
@@ -19,22 +17,25 @@ class KTPair<T, U> {
         mapFirst != null ? mapFirst(left) : (T is R ? left as R : null),
         mapSecond != null ? mapSecond(right) : (U is R ? right as R : null)
       ];
+
+  @override
+  T get key => left;
+
+  @override
+  U get value => right;
 }
 
-typedef Triple<F, S, T> = KTTriple<F, S, T>;
+Triple<F, S, T> triple<F, S, T>(F first, S second, T third) =>
+    Triple.of(first, second, third);
 
-KTTriple<F, S, T> triple<F, S, T>(F first, S second, T third) =>
-    KTTriple.of(first, second, third);
-
-class KTTriple<A, B, C> {
-  KTTriple(this.first, this.second, this.third);
+class Triple<A, B, C> {
+  Triple(this.first, this.second, this.third);
 
   final A first;
   final B second;
   final C third;
 
-  factory KTTriple.of(A first, B second, C third) =>
-      KTTriple(first, second, third);
+  factory Triple.of(A first, B second, C third) => Triple(first, second, third);
 
   @override
   String toString() => 'Triple[$first, $second, $third]';

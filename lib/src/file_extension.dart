@@ -27,7 +27,7 @@ extension KTFileExtension on File {
   String get md5sha1 => hash('MD5') + hash('SHA1');
 }
 
-void fileWalk(String basePath, void Function(File) block) {
+void fileWalk(String basePath, void Function(File file) block) {
   var f = Directory(basePath);
   f.listSync().forEach((it) {
     if (it is Directory) {

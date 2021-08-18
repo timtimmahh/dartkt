@@ -12,22 +12,25 @@ extension KTStringExtension on String {
   String substringBefore(Pattern pattern) =>
       indexOf(pattern).let((idx) => idx == -1 ? this : substring(0, idx));
 
-  String substringAfter(Pattern pattern) => indexOf(pattern)
-      .let((idx) => idx == -1 ? this : substring(idx + pattern.toString().length, length));
+  String substringAfter(Pattern pattern) => indexOf(pattern).let((idx) =>
+      idx == -1 ? this : substring(idx + pattern.toString().length, length));
 
   String substringBeforeLast(Pattern pattern) =>
       lastIndexOf(pattern).let((idx) => idx == -1 ? this : substring(0, idx));
 
-  String substringAfterLast(Pattern pattern) => lastIndexOf(pattern)
-      .let((idx) => idx == -1 ? this : substring(idx + pattern.toString().length, length));
-  
+  String substringAfterLast(Pattern pattern) =>
+      lastIndexOf(pattern).let((idx) => idx == -1
+          ? this
+          : substring(idx + pattern.toString().length, length));
+
   String removeFirst(Pattern pattern) => replaceFirst(pattern, '');
 
   String removeAll(Pattern pattern) => replaceAll(pattern, '');
 
   String removeRange(int startIdx, int endIdx) {
     if (endIdx < startIdx) {
-      throw Exception('End index ($endIdx) is less than start index ($startIdx).');
+      throw Exception(
+          'End index ($endIdx) is less than start index ($startIdx).');
     }
     return endIdx == startIdx ? this : replaceRange(startIdx, endIdx, '');
   }
@@ -35,22 +38,29 @@ extension KTStringExtension on String {
   String removePrefix(Pattern pattern) =>
       startsWith(pattern) ? substring(pattern.toString().length, length) : this;
 
-  String removeSuffix(Pattern pattern) =>
-      endsWith(pattern.toString()) ? substring(0, length - pattern.toString().length) : this;
+  String removeSuffix(Pattern pattern) => endsWith(pattern.toString())
+      ? substring(0, length - pattern.toString().length)
+      : this;
 
-  String removeSurrounding(Pattern pattern) => removePrefix(pattern).removeSuffix(pattern);
+  String removeSurrounding(Pattern pattern) =>
+      removePrefix(pattern).removeSuffix(pattern);
 
-  String replaceBefore(Pattern pattern, String replacement) =>
-      indexOf(pattern).let((idx) => idx == -1 ? this : replaceRange(0, idx, replacement));
+  String replaceBefore(Pattern pattern, String replacement) => indexOf(pattern)
+      .let((idx) => idx == -1 ? this : replaceRange(0, idx, replacement));
 
-  String replaceAfter(Pattern pattern, String replacement) => indexOf(pattern).let((idx) =>
-      idx == -1 ? this : replaceRange(idx + pattern.toString().length, length, replacement));
+  String replaceAfter(Pattern pattern, String replacement) =>
+      indexOf(pattern).let((idx) => idx == -1
+          ? this
+          : replaceRange(idx + pattern.toString().length, length, replacement));
 
-  String replaceAfterLast(Pattern pattern, String replacement) => lastIndexOf(pattern).let((idx) =>
-      idx == -1 ? this : replaceRange(idx + pattern.toString().length, length, replacement));
+  String replaceAfterLast(Pattern pattern, String replacement) =>
+      lastIndexOf(pattern).let((idx) => idx == -1
+          ? this
+          : replaceRange(idx + pattern.toString().length, length, replacement));
 
   String replaceBeforeLast(Pattern pattern, String replacement) =>
-      lastIndexOf(pattern).let((idx) => idx == -1 ? this : replaceRange(0, idx, replacement));
+      lastIndexOf(pattern)
+          .let((idx) => idx == -1 ? this : replaceRange(0, idx, replacement));
 
   List<String> lines() => split('\n').toList();
 
@@ -166,7 +176,8 @@ extension KTStringExtension on String {
   // swift
   String lastPathPart() => substringAfterLast('/');
 
-  String getPathDirectory() => substringBeforeLast('/').let((it) => it == '' ? '/' : it);
+  String getPathDirectory() =>
+      substringBeforeLast('/').let((it) => it == '' ? '/' : it);
 
   // rarnu
   String toJsonEncoded() =>
@@ -183,14 +194,17 @@ extension KTStringExtension on String {
     return ret;
   }
 
-  String extension() => indexOf('.').let((idx) => idx == -1 ? '' : substringAfterLast('.'));
+  String extension() =>
+      indexOf('.').let((idx) => idx == -1 ? '' : substringAfterLast('.'));
 
-  String replaceTag(String tag, String Function() block) => replaceAll(tag, block());
+  String replaceTag(String tag, String Function() block) =>
+      replaceAll(tag, block());
 
-  String skipEmptyLine() => lines().filterNot((it) => it.trim() == '').joinToString('\n');
+  String skipEmptyLine() =>
+      lines().filterNot((it) => it.trim() == '').joinToString('\n');
 
-  KTPair<String, String> toPair() =>
-      split('=').map2((it) => it.trim()).let((it) => KTPair(it[0], it[1]));
+  Pair<String, String> toPair() =>
+      split('=').map2((it) => it.trim()).let((it) => Pair(it[0], it[1]));
 
   void save(File f) => f.writeAsStringSync(this);
 
@@ -203,7 +217,8 @@ extension KTStringExtension on String {
     });
   }
 
-  String asFileReadText() => File(this).let((it) => it.existsSync() ? it.readAsStringSync() : '');
+  String asFileReadText() =>
+      File(this).let((it) => it.existsSync() ? it.readAsStringSync() : '');
 
   void asFileMkdirs() => Directory(this).let((it) {
         if (!it.existsSync()) it.createSync(recursive: true);
@@ -235,11 +250,11 @@ extension KTStringExtension on String {
   String get md5sha1 => hash('MD5') + hash('SHA1');
 
   Map<String, String> toMap() =>
-      split('&').map2((s) => s.split('=').let((i) => KTPair(i[0], i[1]))).toMap<String, String>();
+      split('&').map2((s) => s.split('=').let((i) => Pair(i[0], i[1]))).toMap();
 
   Map<String, String> toCookieMap() => split(';')
-      .map2((s) => s.trim().split('=').let((i) => KTPair(i[0], i[1])))
-      .toMap<String, String>();
+      .map2((s) => s.trim().split('=').let((i) => Pair(i[0], i[1])))
+      .toMap();
 
   RegExp asRegExp(
           {bool multiLine = false,
