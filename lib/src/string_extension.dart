@@ -154,6 +154,8 @@ extension KTStringExtension on String {
 
   bool toBool() => toLowerCase() == 'true';
 
+  DateTime toDateTime() => DateTime.parse(this);
+
   // ktor
   String base64encode() => base64.encode(utf8.encode(this));
 

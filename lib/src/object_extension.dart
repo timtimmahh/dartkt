@@ -14,12 +14,12 @@ extension KTNullableObjectExtension<T> on T? {
 }
 
 extension KTObjectExtension<T> on T {
-  T also(void Function(T obj) block) {
+  T also(void Function(T it) block) {
     block(this);
     return this;
   }
 
-  R let<R>(R Function(T obj) block) => block(this);
+  R let<R>(R Function(T it) block) => block(this);
 
   ElseBlock<T> ifBlock(bool condition, T Function(T) block) =>
       ElseBlock(condition, condition ? block(this) : this);
