@@ -46,6 +46,14 @@ extension KTIterableExtension<T> on Iterable<T> {
 List<T> emptyList<T>() => List<T>.empty();
 
 extension KTListExtension<T> on List<T> {
+  List<T> append(T value) => this..add(value);
+
+  List<T> appendAll(Iterable<T> iterable) => this..addAll(iterable);
+
+  List<T> prepend(T value) => this..insert(0, value);
+
+  List<T> prependAll(Iterable<T> iterable) => this..insertAll(0, iterable);
+
   // kotlin
   T? find(bool Function(T) block) {
     for (var e in this) {
@@ -270,8 +278,7 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  C mapIndexedTo<R, C extends List<R>>(
-      C dest, R Function(int idx, T item) block) {
+  C mapIndexedTo<R, C extends List<R>>(C dest, R Function(int idx, T item) block) {
     for (var i = 0; i < length; i++) {
       dest.add(block(i, this[i]));
     }
@@ -287,8 +294,7 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  C filterIndexedTo<C extends List<T>>(
-      C dest, bool Function(int idx, T item) block) {
+  C filterIndexedTo<C extends List<T>>(C dest, bool Function(int idx, T item) block) {
     for (var i = 0; i < length; i++) {
       if (block(i, this[i])) {
         dest.add(this[i]);
