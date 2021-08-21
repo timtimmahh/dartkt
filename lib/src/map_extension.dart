@@ -88,6 +88,10 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return ret;
   }
 
+  V? get first => this[keys.first];
+
+  V? get last => this[keys.last];
+
   void add(Map<K, V> map) => map.forEach((k, v) => this[k] = v);
 
   void minus(Map<K, V> map) => removeWhere((k, v) => map[k] == v);
