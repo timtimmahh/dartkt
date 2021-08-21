@@ -155,13 +155,13 @@ extension KTIterableIterableExtension<T> on Iterable<Iterable<T>> {
 }
 
 extension KTIterablePairNullKeyExtension<K, V> on Iterable<Pair<K?, V>> {
-  Map<K, V> toMapNotNull() => Map.fromEntries(
+  Map<K, V> toMapNotNullKey() => Map.fromEntries(
       map<Pair<K, V>?>((e) => e.left == null ? null : e as Pair<K, V>)
           .whereType<Pair<K, V>>());
 }
 
 extension KTIterablePairNullValueExtension<K, V> on Iterable<Pair<K, V?>> {
-  Map<K, V> toMapNotNull() => Map.fromEntries(
+  Map<K, V> toMapNotNullValue() => Map.fromEntries(
       map<Pair<K, V>?>((e) => e.right == null ? null : e as Pair<K, V>)
           .whereType<Pair<K, V>>());
 }
