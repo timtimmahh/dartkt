@@ -121,6 +121,14 @@ extension KTIterableExtension<T> on Iterable<T> {
 
   bool isType<E>() => T == E;
 
+  Iterable<R> mapIndexed<R>(R Function(int index, T it) transform) {
+    var result = <R>[];
+    for (var index = 0, iter = iterator; iter.moveNext();) {
+      result.add(transform(index, iter.current));
+    }
+    return result;
+  }
+
   Iterable<R> mapNotNull<R>(R? Function(T it) transform) =>
       map(transform).whereType<R>();
 
@@ -144,6 +152,24 @@ extension KTIterableExtension<T> on Iterable<T> {
 
 extension KTIterableIterableExtension<T> on Iterable<Iterable<T>> {
   Iterable<T> flatten() => expand((element) => element);
+}
+
+extension KTIterablePairNullKeyExtension<K, V> on Iterable<Pair<K?, V>> {
+  Map<K, V> toMapNotNull() => Map.fromEntries(
+      map<Pair<K, V>?>((e) => e.left == null ? null : e as Pair<K, V>)
+          .whereType<Pair<K, V>>());
+}
+
+extension KTIterablePairNullValueExtension<K, V> on Iterable<Pair<K, V?>> {
+  Map<K, V> toMapNotNull() => Map.fromEntries(
+      map<Pair<K, V>?>((e) => e.right == null ? null : e as Pair<K, V>)
+          .whereType<Pair<K, V>>());
+}
+
+extension KTIterablePairNullExtension<K, V> on Iterable<Pair<K?, V?>> {
+  Map<K, V> toMapNotNull() => Map.fromEntries(map<Pair<K, V>?>(
+          (e) => e.left == null || e.right == null ? null : e as Pair<K, V>)
+      .whereType<Pair<K, V>>());
 }
 
 extension KTIterablePairExtension<K, V> on Iterable<Pair<K, V>> {
