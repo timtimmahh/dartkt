@@ -150,8 +150,7 @@ extension KTIterableExtension<T> on Iterable<T> {
   }
 }
 
-extension KTIterableIterableExtension<T, N extends Iterable<T>,
-    I extends Iterable<N>> on I {
+extension KTIterableIterableExtension<T> on Iterable<Iterable<T>> {
   Iterable<T> flatten() => expand((element) => element);
 }
 
