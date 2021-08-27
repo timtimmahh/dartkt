@@ -150,8 +150,13 @@ extension KTIterableExtension<T> on Iterable<T> {
   }
 }
 
-extension KTIterableIterableExtension<T> on Iterable<Iterable<T>> {
+extension KTIterableIterableExtension<T, N extends Iterable<T>,
+    I extends Iterable<N>> on I {
   Iterable<T> flatten() => expand((element) => element);
+}
+
+extension KTIterableNullIterableExtension<T> on Iterable<Iterable<T>?> {
+  Iterable<T> flatten() => filterNotNull().expand((element) => element);
 }
 
 extension KTIterablePairNullKeyExtension<K, V> on Iterable<Pair<K?, V>> {

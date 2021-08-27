@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+import 'pair_extension.dart';
+
 class DurationFormat {
   static const String DAY = 'd';
   static const String HOUR = 'H';
@@ -7,25 +9,50 @@ class DurationFormat {
   static const String SECOND = 's';
 
   String? _pattern;
+  final bool _showZeroes;
 
-  DurationFormat([this._pattern]);
+  DurationFormat([this._pattern, this._showZeroes = false]);
 
-  String format(Duration duration) => pattern.replaceAllMapped(
-      RegExp('(%)(d+|H+|m+|s+)'),
-      (Match m) => _valueFor(m.group(2), duration).toString());
+  String format(Duration duration) {
+    var showingValue = {
+      'days': true,
+      'hours': true,
+      'minutes': true,
+      'seconds': true
+    };
+    return pattern.replaceAllMapped(RegExp('(%)(d+|H+|m+|s+)([\\s\\w,]+)'),
+        (Match m) {
+      var value = _valueFor(m.group(2), duration, showingValue);
+      return !value.right ? '' : '${value.left.toString()}${m.group(3)}';
+    });
+  }
 
-  int _valueFor(String? match, Duration duration) {
+  Pair<int, bool> _valueFor(
+      String? match, Duration duration, Map<String, bool> showingValue) {
     switch (match?.substring(0, 1)) {
       case DAY:
-        return duration.inDays;
+        var day = duration.inDays;
+        showingValue['days'] = (!_showZeroes && day != 0) || _showZeroes;
+        return Pair.of(day, showingValue['days']!);
       case HOUR:
-        return duration.inHours.remainder(24);
+        var hour = duration.inHours.remainder(24);
+        showingValue['hours'] =
+            showingValue['days']! || (!_showZeroes && hour != 0) || _showZeroes;
+        return Pair.of(hour, showingValue['hours']!);
       case MINUTE:
-        return duration.inMinutes.remainder(60);
+        var minute = duration.inMinutes.remainder(60);
+        showingValue['minutes'] = showingValue['hours']! ||
+            (!_showZeroes && minute != 0) ||
+            _showZeroes;
+        return Pair.of(minute, showingValue['minutes']!);
       case SECOND:
-        return duration.inSeconds.remainder(60);
+        var second = duration.inSeconds.remainder(60);
+        showingValue['seconds'] = showingValue['seconds']! ||
+            (!_showZeroes && second != 0) ||
+            _showZeroes;
+        return Pair.of(second, showingValue['seconds']!);
       default:
-        return 0;
+        return Pair.of(0, false);
     }
   }
 
@@ -34,7 +61,8 @@ class DurationFormat {
 }
 
 extension DurationExtension on Duration {
-  String format([String? pattern]) => DurationFormat(pattern).format(this);
+  String format([String? pattern, bool showZeroes = false]) =>
+      DurationFormat(pattern, showZeroes).format(this);
 }
 
 extension Date on DateTime {

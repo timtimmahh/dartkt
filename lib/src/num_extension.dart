@@ -1,3 +1,5 @@
+extension KTDoubleExtension on double {}
+
 extension KTIntExtension on int {
   List<int> to(int maxInclusive, {int step = 1}) =>
       [for (int i = this; i <= maxInclusive; i += step) i];
