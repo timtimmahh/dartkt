@@ -12,16 +12,27 @@ extension KTStringExtension on String {
   String substringBefore(Pattern pattern) =>
       indexOf(pattern).let((idx) => idx == -1 ? this : substring(0, idx));
 
-  String substringAfter(Pattern pattern) => indexOf(pattern).let((idx) =>
-      idx == -1 ? this : substring(idx + pattern.toString().length, length));
+  String substringAfter(Pattern pattern) {
+    if (pattern is RegExp) {
+      return pattern.firstMatch(this)?.let((it) => substring(it.end, length)) ??
+          this;
+    }
+    return indexOf(pattern).let((idx) =>
+        idx == -1 ? this : substring(idx + pattern.toString().length, length));
+  }
 
   String substringBeforeLast(Pattern pattern) =>
       lastIndexOf(pattern).let((idx) => idx == -1 ? this : substring(0, idx));
 
-  String substringAfterLast(Pattern pattern) =>
-      lastIndexOf(pattern).let((idx) => idx == -1
-          ? this
-          : substring(idx + pattern.toString().length, length));
+  String substringAfterLast(Pattern pattern) {
+    if (pattern is RegExp) {
+      return pattern.hasMatch(this)
+          ? pattern.allMatches(this).last.let((it) => substring(it.end, length))
+          : this;
+    }
+    return lastIndexOf(pattern).let((idx) =>
+        idx == -1 ? this : substring(idx + pattern.toString().length, length));
+  }
 
   String removeFirst(Pattern pattern) => replaceFirst(pattern, '');
 
