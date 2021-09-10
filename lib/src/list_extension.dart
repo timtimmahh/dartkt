@@ -5,6 +5,67 @@ Iterable<T> emptyIterable<T>() => Iterable.empty();
 
 List<T> emptyList<T>() => List<T>.empty();
 
+class ListIterator<E> extends BidirectionalIterator<E> {
+  final List<E> _iterable;
+  final int _length;
+  int _index;
+  int _nextIndex;
+  E? _current;
+
+  ListIterator(List<E> iterable)
+      : _iterable = iterable,
+        _length = iterable.length,
+        _index = 0,
+        _nextIndex = 0;
+
+  @override
+  E get current => _current as E;
+
+  int get currentIndex => _index;
+
+  int _lengthCheck() {
+    var length = _iterable.length;
+    if (_length != length) {
+      throw ConcurrentModificationError(_iterable);
+    }
+    return length;
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  bool moveNext() {
+    var length = _lengthCheck();
+    if (_index >= length) {
+      _current = null;
+      return false;
+    }
+    _index = _nextIndex;
+    _current = _iterable[_index];
+    _nextIndex++;
+    return true;
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  bool movePrevious() {
+    _lengthCheck();
+    if (_index <= 0) {
+      _current = null;
+      return false;
+    }
+    _nextIndex = _index;
+    _current = _iterable[--_index];
+
+    return true;
+  }
+
+  E set(E value) {
+    var oldValue = _iterable[_index];
+    _current = _iterable[_index] = value;
+    return oldValue;
+  }
+}
+
 extension KTNumIterableExtension on Iterable<num> {
   double average() {
     var sum = 0.0;
@@ -123,14 +184,23 @@ extension KTIterableExtension<T> on Iterable<T> {
 
   Iterable<R> mapIndexed<R>(R Function(int index, T it) transform) {
     var result = <R>[];
-    for (var index = 0, iter = iterator; iter.moveNext();) {
+    for (var index = 0, iter = iterator; iter.moveNext(); index++) {
       result.add(transform(index, iter.current));
     }
     return result;
   }
 
+  List<R> mapL<R>(R Function(T it) transform) => map(transform).toList();
+
   Iterable<R> mapNotNull<R>(R? Function(T it) transform) =>
       map(transform).whereType<R>();
+
+  Set<R> mapS<R>(R Function(T it) transform) => map(transform).toSet();
+
+  Iterable<T> onEach(void Function(T it) action) {
+    forEach(action);
+    return this;
+  }
 
   Pair<Iterable<T>, Iterable<T>> partition(bool Function(T it) predicate) {
     final parts =
@@ -336,6 +406,8 @@ extension KTListExtension<T> on List<T> {
     return idx;
   }
 
+  ListIterator<T> get listIterator => ListIterator<T>(this);
+
   String joinToString([String sep = ',', String Function(T)? block]) {
     var str = '';
     forEach((it) {
@@ -366,21 +438,11 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  List<R> map2<R>(R Function(T it) transform) {
-    var ret = <R>[];
-    for (var i = 0; i < length; i++) {
-      ret.add(transform(this[i]));
-    }
-    return ret;
-  }
+  List<R> mapLIndexed<R>(R Function(int index, T it) transform) =>
+      mapIndexed(transform).toList();
 
-  List<R> map2Indexed<R>(R Function(int index, T it) transform) {
-    var ret = <R>[];
-    for (var i = 0; i < length; i++) {
-      ret.add(transform(i, this[i]));
-    }
-    return ret;
-  }
+  Set<R> mapSIndexed<R>(R Function(int index, T it) transform) =>
+      mapIndexed(transform).toSet();
 
   void minus(List<T> list) => removeWhere((it) => list.contains(it));
 
@@ -392,6 +454,11 @@ extension KTListExtension<T> on List<T> {
       }
     }
     return true;
+  }
+
+  List<T> onEachIndexed(void Function(int index, T it) action) {
+    forEachIndexed(action);
+    return this;
   }
 
   List<T> prepend(T value) => this..insert(0, value);

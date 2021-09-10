@@ -12,7 +12,7 @@ class Config {
   static void loadFromFile(File file) => _config = file
       .readAsLinesSync()
       .skipEmptyLine()
-      .map2((line) => line.split('=').let((c) => Pair(c[0], c[1])))
+      .mapL((line) => line.split('=').let((c) => Pair(c[0], c[1])))
       .toMap();
 
   static String? get(String name) => _config[name];
