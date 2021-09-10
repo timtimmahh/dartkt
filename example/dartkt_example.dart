@@ -30,4 +30,6 @@ void main() {
   var date = DateTime.parse('2021-08-27 19:45:00Z');
   print(date.format());
   print(date.difference(DateTime.parse('2021-08-27 18:44:30Z')).format());
+  var res = 'one'.to('two').to('three');
+  print(res);
 }

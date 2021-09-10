@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'bool_extension.dart';
 import 'pair_extension.dart';
 
@@ -83,6 +85,18 @@ extension KTDynamicIterableExtension on Iterable<dynamic> {
 }
 
 extension KTIterableExtension<T> on Iterable<T> {
+  Iterable<Pair<int, T>> _iterIndexed() sync* {
+    for (var index = 0, iter = iterator; iter.moveNext(); index++) {
+      yield Pair.of(index, iter.current);
+    }
+  }
+
+  Stream<Pair<int, T>> _iterIndexedAsync() async* {
+    for (var index = 0, iter = iterator; iter.moveNext(); index++) {
+      yield Pair.of(index, iter.current);
+    }
+  }
+
   bool all(bool Function(T it) predicate) {
     if (isEmpty) return false;
     for (var item in this) {
@@ -107,7 +121,7 @@ extension KTIterableExtension<T> on Iterable<T> {
       map(transform).toMap();
 
   Map<K, V> associateBy<K, V>(K Function(T it) keySelector,
-          [V Function(T it)? valueTransform]) =>
+      [V Function(T it)? valueTransform]) =>
       associate((it) =>
           Pair.of(keySelector(it), valueTransform?.call(it) ?? it as V));
 
@@ -151,8 +165,24 @@ extension KTIterableExtension<T> on Iterable<T> {
 
   Iterable<T> filter(bool Function(T it) predicate) => where(predicate);
 
+  Iterable<T> filterIndexed(bool Function(int index, T it) predicate) sync* {
+    for (var item in _iterIndexed()) {
+      if (predicate(item.left, item.right)) {
+        yield item.right;
+      }
+    }
+  }
+
   Iterable<T> filterNot(bool Function(T it) predicate) =>
       where((e) => !predicate(e));
+
+  Iterable<T> filterNotIndexed(bool Function(int index, T it) predicate) sync* {
+    for (var item in _iterIndexed()) {
+      if (!predicate(item.left, item.right)) {
+        yield item.right;
+      }
+    }
+  }
 
   T? find(bool Function(T it) predicate) => firstWhere(predicate);
 
@@ -161,12 +191,39 @@ extension KTIterableExtension<T> on Iterable<T> {
   Iterable<R> flatMap<R>(Iterable<R> Function(T it) transform) =>
       expand(transform);
 
+  Iterable<R> flatMapIndexed<R>(
+      Iterable<R> Function(int index, T it) transform) sync* {
+    for (var item in _iterIndexed()) {
+      yield* transform(item.left, item.right);
+    }
+  }
+
+  Iterable<T> operator +(Iterable<T> other) => [...this, ...other];
+
+  Iterable<T> operator -(Iterable<T> other) => filterNot(other.contains);
+
   R fold<R>(R initialValue, R Function(R acc, T it) combine) {
     var finalValue = initialValue;
     for (var item in this) {
       finalValue = combine(finalValue, item);
     }
     return finalValue;
+  }
+
+  void forEachIndexed(void Function(int index, T it) action) {
+    for (var item in _iterIndexed()) {
+      action(item.left, item.right);
+    }
+  }
+
+  Future<void> forEachAsync(Future<void> Function(T it) action) async =>
+      await Future.forEach(this, action);
+
+  Future<void> forEachIndexedAsync(
+      FutureOr Function(int index, T it) action) async {
+    await for (var item in _iterIndexedAsync()) {
+      await action(item.left, item.right);
+    }
   }
 
   Map<K, Iterable<V>> groupBy<K, V>(K Function(T it) keySelector,
@@ -182,23 +239,32 @@ extension KTIterableExtension<T> on Iterable<T> {
 
   bool isType<E>() => T == E;
 
-  Iterable<R> mapIndexed<R>(R Function(int index, T it) transform) {
-    var result = <R>[];
-    for (var index = 0, iter = iterator; iter.moveNext(); index++) {
-      result.add(transform(index, iter.current));
+  Iterable<R> mapIndexed<R>(R Function(int index, T it) transform) sync* {
+    for (var item in _iterIndexed()) {
+      yield transform(item.left, item.right);
     }
-    return result;
   }
 
   List<R> mapL<R>(R Function(T it) transform) => map(transform).toList();
+
+  List<R> mapLIndexed<R>(R Function(int index, T it) transform) =>
+      mapIndexed(transform).toList();
 
   Iterable<R> mapNotNull<R>(R? Function(T it) transform) =>
       map(transform).whereType<R>();
 
   Set<R> mapS<R>(R Function(T it) transform) => map(transform).toSet();
 
+  Set<R> mapSIndexed<R>(R Function(int index, T it) transform) =>
+      mapIndexed(transform).toSet();
+
   Iterable<T> onEach(void Function(T it) action) {
     forEach(action);
+    return this;
+  }
+
+  Iterable<T> onEachIndexed(void Function(int index, T it) action) {
+    forEachIndexed(action);
     return this;
   }
 
@@ -340,8 +406,7 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  C filterIndexedTo<C extends List<T>>(
-      C dest, bool Function(int idx, T item) block) {
+  C filterIndexedTo<C extends List<T>>(C dest, bool Function(int idx, T item) block) {
     for (var i = 0; i < length; i++) {
       if (block(i, this[i])) {
         dest.add(this[i]);
@@ -430,8 +495,7 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  C mapIndexedTo<R, C extends List<R>>(
-      C dest, R Function(int idx, T item) block) {
+  C mapIndexedTo<R, C extends List<R>>(C dest, R Function(int idx, T item) block) {
     for (var i = 0; i < length; i++) {
       dest.add(block(i, this[i]));
     }

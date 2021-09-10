@@ -215,7 +215,7 @@ extension KTStringExtension on String {
       lines().filterNot((it) => it.trim() == '').joinToString('\n');
 
   Pair<String, String> toPair() =>
-      split('=').mapL((it) => it.trim()).let((it) => Pair(it[0], it[1]));
+      split('=').mapL((it) => it.trim()).let((it) => it[0].to(it[1]));
 
   void save(File f) => f.writeAsStringSync(this);
 
@@ -261,11 +261,11 @@ extension KTStringExtension on String {
   String get md5sha1 => hash('MD5') + hash('SHA1');
 
   Map<String, String> toMap() =>
-      split('&').mapL((s) => s.split('=').let((i) => Pair(i[0], i[1]))).toMap();
+      split('&').mapL((s) => s.split('=').let((i) => i[0].to(i[1]))).toMap();
 
   Map<String, String> toCookieMap() =>
       split(';')
-      .mapL((s) => s.trim().split('=').let((i) => Pair(i[0], i[1])))
+      .mapL((s) => s.trim().split('=').let((i) => i[0].to(i[1])))
       .toMap();
 
   RegExp asRegExp(

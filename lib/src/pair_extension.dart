@@ -1,12 +1,16 @@
-Pair<F, S> pair<F, S>(F first, S second) => Pair<F, S>.of(first, second);
+Pair<F, S> pair<F, S>(F first, S second) => Pair.of(first, second);
+
+extension PairExt<F, S> on Pair<F, S> {
+  Triple<F, S, T> to<T>(T third) => Triple.of(left, right, third);
+}
 
 class Pair<T, U> implements MapEntry<T, U> {
-  Pair(this.left, this.right);
+  const Pair._(this.left, this.right);
 
   final T left;
   final U right;
 
-  factory Pair.of(T first, U second) => Pair(first, second);
+  const factory Pair.of(T left, U right) = Pair<T, U>._;
 
   @override
   String toString() => 'Pair[$left, $right]';
@@ -29,13 +33,13 @@ Triple<F, S, T> triple<F, S, T>(F first, S second, T third) =>
     Triple.of(first, second, third);
 
 class Triple<A, B, C> {
-  Triple(this.first, this.second, this.third);
+  const Triple(this.first, this.second, this.third);
 
   final A first;
   final B second;
   final C third;
 
-  factory Triple.of(A first, B second, C third) => Triple(first, second, third);
+  const Triple.of(this.first, this.second, this.third);
 
   @override
   String toString() => 'Triple[$first, $second, $third]';
