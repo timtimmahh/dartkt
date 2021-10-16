@@ -47,7 +47,7 @@ extension KTStringExtension on String {
   }
 
   String removePrefix(Pattern pattern) =>
-      startsWith(pattern) ? substring(pattern.toString().length, length) : this;
+      startsWith(pattern) ? replaceFirst(pattern, '') : this;
 
   String removeSuffix(Pattern pattern) => endsWith(pattern.toString())
       ? substring(0, length - pattern.toString().length)
@@ -238,7 +238,7 @@ extension KTStringExtension on String {
   File asFile() => File(this);
 
   //rarnu
-  String hash([String alg = 'md5']) {
+  String hashWith({String alg = 'md5'}) {
     var content = Utf8Encoder().convert(this);
     Digest digest;
     switch (alg.toLowerCase()) {
@@ -258,13 +258,12 @@ extension KTStringExtension on String {
     return hex.encode(digest.bytes);
   }
 
-  String get md5sha1 => hash('MD5') + hash('SHA1');
+  String get md5sha1 => hashWith(alg: 'MD5') + hashWith(alg: 'SHA1');
 
   Map<String, String> toMap() =>
       split('&').mapL((s) => s.split('=').let((i) => i[0].to(i[1]))).toMap();
 
-  Map<String, String> toCookieMap() =>
-      split(';')
+  Map<String, String> toCookieMap() => split(';')
       .mapL((s) => s.trim().split('=').let((i) => i[0].to(i[1])))
       .toMap();
 

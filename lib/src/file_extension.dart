@@ -4,7 +4,7 @@ import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
 extension KTFileExtension on File {
-  String hash([String alg = 'md5']) {
+  String fileHash({String alg = 'md5'}) {
     var content = readAsBytesSync();
     Digest digest;
     switch (alg.toLowerCase()) {
@@ -24,7 +24,7 @@ extension KTFileExtension on File {
     return hex.encode(digest.bytes);
   }
 
-  String get md5sha1 => hash('MD5') + hash('SHA1');
+  String get md5sha1 => fileHash(alg: 'MD5') + fileHash(alg: 'SHA1');
 }
 
 void fileWalk(String basePath, void Function(File file) block) {

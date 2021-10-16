@@ -10,8 +10,13 @@ class DurationFormat {
 
   String? _pattern;
   final bool _showZeroes;
+  final bool _showLabels;
 
-  DurationFormat([this._pattern, this._showZeroes = false]);
+  DurationFormat(
+      {String? pattern, bool showZeroes = false, bool showLabels = true})
+      : _pattern = pattern,
+        _showZeroes = showZeroes,
+        _showLabels = showLabels;
 
   String format(Duration duration) {
     var showingValue = {
@@ -20,10 +25,10 @@ class DurationFormat {
       'minutes': true,
       'seconds': true
     };
-    return pattern.replaceAllMapped(RegExp('(%)(d+|H+|m+|s+)([\\s\\w,]+)'),
+    return pattern.replaceAllMapped(RegExp('(%)(d+|H+|m+|s+)([\\s,]*)'),
         (Match m) {
       var value = _valueFor(m.group(2), duration, showingValue);
-      return !value.right ? '' : '${value.left.toString()}${m.group(3)}';
+      return !value.right ? '' : '${value.left.toString()}${_showLabels ? _labelFor(m.group(2), value.left) : ''}${m.group(3)}';
     });
   }
 
@@ -56,13 +61,33 @@ class DurationFormat {
     }
   }
 
+  String _labelFor(String? match, int value) {
+    switch (match?.substring(0, 1)) {
+      case DAY:
+        return value == 1 ? ' day' : ' days';
+      case HOUR:
+        return value == 1 ? ' hour' : ' hours';
+      case MINUTE:
+        return value == 1 ? ' minute' : ' minutes';
+      case SECOND:
+        return value == 1 ? ' second' : ' seconds';
+      default:
+        return '';
+    }
+  }
+
   String get pattern =>
-      _pattern ??= '%d days, %H hours, %m minutes, %s seconds';
+      _pattern ??= '%d, %H, %m, %s';
 }
 
 extension DurationExtension on Duration {
-  String format([String? pattern, bool showZeroes = false]) =>
-      DurationFormat(pattern, showZeroes).format(this);
+  String format(
+          {String? pattern,
+          bool showZeroes = false,
+          bool showLabels = true}) =>
+      DurationFormat(
+              pattern: pattern, showZeroes: showZeroes, showLabels: showLabels)
+          .format(this);
 }
 
 extension Date on DateTime {
