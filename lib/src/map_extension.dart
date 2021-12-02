@@ -179,3 +179,23 @@ extension KTMapExtension<K, V> on Map<K, V> {
 
   String toCookieString() => mapToList((key, value) => '$key=$value').join(';');
 }
+
+extension KTDynamicMapExtension<K> on Map<K, dynamic> {
+  V? getAs<V>(K key, {V Function(dynamic value)? converter}) {
+    dynamic value = this[key];
+    if (value is V) {
+      return value;
+    }
+    if (converter == null && value is String) {
+      switch (V) {
+        case int:
+          converter = (value) => int.parse(value as String) as V;
+          break;
+        case double:
+          converter = (value) => double.parse(value as String) as V;
+          break;
+      }
+    }
+    return converter?.call(value);
+  }
+}
