@@ -12,6 +12,8 @@ class Pair<T, U> implements MapEntry<T, U> {
 
   const factory Pair.of(T left, U right) = Pair<T, U>._;
 
+  const Pair.from(T left, U right) : this._(left, right);
+
   @override
   String toString() => 'Pair[$left, $right]';
 
