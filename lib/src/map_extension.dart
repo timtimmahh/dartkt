@@ -1,3 +1,7 @@
+import 'dart:collection';
+
+import 'list_extension.dart';
+
 Map<K, V> emptyMap<K, V>() => <K, V>{};
 
 extension KTMapExtension<K, V> on Map<K, V> {
@@ -152,6 +156,9 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return dest;
   }
 
+  Map<K2, V> mapKeys<K2>(K2 Function(K key) block) =>
+      map((key, value) => MapEntry(block(key), value));
+
   List<R> mapKeysToListTo<R, C extends List<R>>(
       C dest, R Function(K key) block) {
     forEach((key, value) {
@@ -169,6 +176,9 @@ extension KTMapExtension<K, V> on Map<K, V> {
     return dest;
   }
 
+  Map<K, V2> mapValues<V2>(V2 Function(V value) block) =>
+      map((key, value) => MapEntry(key, block(value)));
+
   List<R> mapValuesToListTo<R, C extends List<R>>(
       C dest, R Function(V value) block) {
     forEach((key, value) {
@@ -176,6 +186,36 @@ extension KTMapExtension<K, V> on Map<K, V> {
     });
     return dest;
   }
+
+  LinkedHashMap<K, V> sortBy(
+          [int Function(MapEntry<K, V> first, MapEntry<K, V> second)?
+              compare]) =>
+      compare == null
+          ? sortByKey()
+          : LinkedHashMap.fromEntries(keys
+              .toList()
+              .sortBy((K first, K second) => compare(
+                  MapEntry(first, this[first]!),
+                  MapEntry(second, this[second]!)))
+              .map((e) => MapEntry(e, this[e]!)));
+
+  LinkedHashMap<K, V> sortByDescending(
+          [int Function(MapEntry<K, V> first, MapEntry<K, V> second)?
+              compare]) =>
+      sortBy(
+          compare != null ? (first, second) => compare(second, first) : null);
+
+  LinkedHashMap<K, V> sortByKey([int Function(K first, K second)? compare]) =>
+      LinkedHashMap.fromEntries(
+          keys.toList().sortBy(compare).map((e) => MapEntry(e, this[e]!)));
+
+  LinkedHashMap<K, V> sortByValue([int Function(V first, V second)? compare]) =>
+      LinkedHashMap.fromEntries(keys
+          .toList()
+          .sortBy(compare != null
+              ? (first, second) => compare(this[first]!, this[second]!)
+              : null)
+          .map((e) => MapEntry(e, this[e]!)));
 
   String toCookieString() => mapToList((key, value) => '$key=$value').join(';');
 }

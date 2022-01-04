@@ -68,7 +68,7 @@ class ListIterator<E> extends BidirectionalIterator<E> {
   }
 }
 
-extension KTNumIterableExtension on Iterable<num> {
+extension KTNumIterableExtension<T extends num> on Iterable<T> {
   double average() {
     var sum = 0.0;
     var count = 0;
@@ -78,6 +78,14 @@ extension KTNumIterableExtension on Iterable<num> {
     }
     return count == 0 ? double.nan : sum / count;
   }
+}
+
+extension KTIntIterableExtension on Iterable<int> {
+  int sum() => reduce((value, el) => value + el);
+}
+
+extension KTDoubleIterableExtension on Iterable<double> {
+  double sum() => reduce((value, el) => value + el);
 }
 
 extension KTDynamicIterableExtension on Iterable<dynamic> {
@@ -121,7 +129,7 @@ extension KTIterableExtension<T> on Iterable<T> {
       map(transform).toMap();
 
   Map<K, V> associateBy<K, V>(K Function(T it) keySelector,
-      [V Function(T it)? valueTransform]) =>
+          [V Function(T it)? valueTransform]) =>
       associate((it) =>
           Pair.of(keySelector(it), valueTransform?.call(it) ?? it as V));
 
@@ -294,13 +302,15 @@ extension KTIterableNullIterableExtension<T> on Iterable<Iterable<T>?> {
   Iterable<T> flatten() => filterNotNull().expand((element) => element);
 }
 
-extension KTIterableMapEntryNullKeyExtension<K, V> on Iterable<MapEntry<K?, V>> {
+extension KTIterableMapEntryNullKeyExtension<K, V>
+    on Iterable<MapEntry<K?, V>> {
   Map<K, V> toMapNotNullKey() => Map.fromEntries(
       map<MapEntry<K, V>?>((e) => e.key == null ? null : e as MapEntry<K, V>)
           .whereType<MapEntry<K, V>>());
 }
 
-extension KTIterableMapEntryNullValueExtension<K, V> on Iterable<MapEntry<K, V?>> {
+extension KTIterableMapEntryNullValueExtension<K, V>
+    on Iterable<MapEntry<K, V?>> {
   Map<K, V> toMapNotNullValue() => Map.fromEntries(
       map<MapEntry<K, V>?>((e) => e.value == null ? null : e as MapEntry<K, V>)
           .whereType<MapEntry<K, V>>());
@@ -406,7 +416,8 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  C filterIndexedTo<C extends List<T>>(C dest, bool Function(int idx, T item) block) {
+  C filterIndexedTo<C extends List<T>>(
+      C dest, bool Function(int idx, T item) block) {
     for (var i = 0; i < length; i++) {
       if (block(i, this[i])) {
         dest.add(this[i]);
@@ -449,6 +460,9 @@ extension KTListExtension<T> on List<T> {
     }
   }
 
+  bool has<R>(R value, {R Function(T value)? mapper}) =>
+      any((it) => (mapper?.call(it) ?? it) == value);
+
   int indexOfFirst(bool Function(T it) predicate) {
     var idx = -1;
     for (var i = 0; i < length; i++) {
@@ -473,13 +487,13 @@ extension KTListExtension<T> on List<T> {
 
   ListIterator<T> get listIterator => ListIterator<T>(this);
 
-  String joinToString([String sep = ',', String Function(T)? block]) {
+  String joinToString([String sep = ',', String Function(T value)? converter]) {
     var str = '';
     forEach((it) {
-      if (block == null) {
+      if (converter == null) {
         str += '$it$sep';
       } else {
-        str += '${block(it)}$sep';
+        str += '${converter(it)}$sep';
       }
     });
     if (str.endsWith(sep)) {
@@ -495,7 +509,8 @@ extension KTListExtension<T> on List<T> {
     return dest;
   }
 
-  C mapIndexedTo<R, C extends List<R>>(C dest, R Function(int idx, T item) block) {
+  C mapIndexedTo<R, C extends List<R>>(
+      C dest, R Function(int idx, T item) block) {
     for (var i = 0; i < length; i++) {
       dest.add(block(i, this[i]));
     }
@@ -539,17 +554,16 @@ extension KTListExtension<T> on List<T> {
 
   List<T> slice(int startIdx, int endIdx) => sublist(startIdx, endIdx);
 
-  List<T> sortBy(int Function(T first, T second) selector) {
-    var tmp = this;
+  List<T> sortBy([int Function(T first, T second)? selector]) {
+    var tmp = List.of(this);
     tmp.sort(selector);
     return tmp;
   }
 
-  List<T> sortByDescending(int Function(T first, T second) selector) {
-    var tmp = this;
-    tmp.sort(selector);
-    return tmp.reversed.toList();
-  }
+  List<T> sortByDescending([int Function(T first, T second)? selector]) =>
+      sortBy(selector != null
+          ? (first, second) => -selector(first, second)
+          : null);
 
   // rarnu
   List<List<T>> toGridData([int column = 1]) {
