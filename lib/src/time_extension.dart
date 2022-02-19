@@ -11,12 +11,14 @@ class DurationFormat {
   String? _pattern;
   final bool _showZeroes;
   final bool _showLabels;
+  final bool _abbreviateLabels;
 
-  DurationFormat(
-      {String? pattern, bool showZeroes = false, bool showLabels = true})
+  DurationFormat({String? pattern, bool showZeroes = false, bool showLabels = true, bool abbreviateLabels = true})
       : _pattern = pattern,
         _showZeroes = showZeroes,
-        _showLabels = showLabels;
+        _showLabels = showLabels,
+        _abbreviateLabels = abbreviateLabels
+  ;
 
   String format(Duration duration) {
     var showingValue = {
@@ -26,14 +28,14 @@ class DurationFormat {
       'seconds': true
     };
     return pattern.replaceAllMapped(RegExp('(%)(d+|H+|m+|s+)([\\s,]*)'),
-        (Match m) {
-      var value = _valueFor(m.group(2), duration, showingValue);
-      return !value.right ? '' : '${value.left.toString()}${_showLabels ? _labelFor(m.group(2), value.left) : ''}${m.group(3)}';
-    });
+            (Match m) {
+          var value = _valueFor(m.group(2), duration, showingValue);
+          return !value.right ? '' : '${value.left.toString()}${_showLabels ? _labelFor(m.group(2), value.left) : ''}${m
+              .group(3)}';
+        });
   }
 
-  Pair<int, bool> _valueFor(
-      String? match, Duration duration, Map<String, bool> showingValue) {
+  Pair<int, bool> _valueFor(String? match, Duration duration, Map<String, bool> showingValue) {
     switch (match?.substring(0, 1)) {
       case DAY:
         var day = duration.inDays;
@@ -66,10 +68,16 @@ class DurationFormat {
       case DAY:
         return value == 1 ? ' day' : ' days';
       case HOUR:
+        if (_abbreviateLabels)
+          return value == 1 ? ' hr' : ' hrs';
         return value == 1 ? ' hour' : ' hours';
       case MINUTE:
+        if (_abbreviateLabels)
+          return value == 1 ? ' min' : ' mins';
         return value == 1 ? ' minute' : ' minutes';
       case SECOND:
+        if (_abbreviateLabels)
+          return value == 1 ? ' sec' : ' secs';
         return value == 1 ? ' second' : ' seconds';
       default:
         return '';
@@ -81,12 +89,13 @@ class DurationFormat {
 }
 
 extension DurationExtension on Duration {
-  String format(
-          {String? pattern,
-          bool showZeroes = false,
-          bool showLabels = true}) =>
+  String format({String? pattern,
+    bool showZeroes = false,
+    bool showLabels = true,
+    bool abbreviateLabels = true
+  }) =>
       DurationFormat(
-              pattern: pattern, showZeroes: showZeroes, showLabels: showLabels)
+          pattern: pattern, showZeroes: showZeroes, showLabels: showLabels, abbreviateLabels: abbreviateLabels)
           .format(this);
 }
 
@@ -107,11 +116,11 @@ extension Date on DateTime {
           : DateTime.tryParse(formattedString);
 
   static DateTime fromMillisecondsSinceEpoch(int millisecondsSinceEpoch,
-          {bool isUtc = false}) =>
+      {bool isUtc = false}) =>
       DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch, isUtc: isUtc);
 
   static DateTime fromMicrosecondsSinceEpoch(int microsecondsSinceEpoch,
-          {bool isUtc = false}) =>
+      {bool isUtc = false}) =>
       DateTime.fromMicrosecondsSinceEpoch(microsecondsSinceEpoch, isUtc: isUtc);
 
   String format([String? newPattern, String? locale]) =>
